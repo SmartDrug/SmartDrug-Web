@@ -5,6 +5,10 @@
     </head>
     <title>파일 업로드 테스트</title>
     <style>
+      @import url(//fonts.googleapis.com/earlyaccess/nanumgothic.css);
+      * {
+          font-family: 'Nanum Gothic', sans-serif;
+      }
         @keyframes spinner {
             to {
                 transform: rotate(360deg);
@@ -121,8 +125,8 @@
                             newImage.src = URL.createObjectURL(file);   
 
                             newImage.style.marginTop = "2%";
-                            newImage.style.width = "70%";
-                            newImage.style.height = "70%";
+                            newImage.style.width = "50%";
+                            newImage.style.height = "50%";
                             newImage.style.objectFit = "contain";
 
                             //이미지를 image-show div에 추가
@@ -211,7 +215,7 @@
 
         <div id="result_div" hidden>
           <hr>
-          <span class="badge text-bg-success">업로드 된 이미지</span>
+          <span class="badge text-bg-primary">업로드 된 이미지</span>
           <div id="image_preview"></div>
           <hr>
           <span class="badge text-bg-success">결과</span>
@@ -230,7 +234,7 @@
             </tbody>
           </table>
           <hr>
-          <span class="badge text-bg-success">결과 JSON</span>
+          <span class="badge text-bg-dark">결과 JSON</span>
           <pre id="result"></pre>
         </div>
       </div>
