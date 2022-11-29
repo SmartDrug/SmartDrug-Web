@@ -81,13 +81,15 @@
             }
         }
     </style>
+    <!-- CSS only -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <body>
         <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
         <script>
             function addSpinner(el, static_pos) {
                 var spinner = el.children('.spinner');
                 if (spinner.length && !spinner.hasClass('spinner-remove')) return null;
-                !spinner.length && (spinner = $(' < div class = "spinner' + (static_pos ? '' : ' spinner-absolute') + '" / > ').appendTo(el));
+                !spinner.length && (spinner = $('<div class = "col-sm-8 spinner' + (static_pos ? '' : ' spinner-absolute') + '" /> ').appendTo(el));
                             animateSpinner(spinner, 'add');
                         }
 
@@ -109,9 +111,27 @@
                         }
 
                         function fileUpload() {
+                            var input = document.querySelector('input[type="file"]');
+                            var file = input.files[0];
+
+                            var newImage = document.createElement("img");
+                            newImage.setAttribute("class", 'img');
+
+                            //이미지 source 가져오기
+                            newImage.src = URL.createObjectURL(file);   
+
+                            newImage.style.marginTop = "2%";
+                            newImage.style.width = "70%";
+                            newImage.style.height = "70%";
+                            newImage.style.objectFit = "contain";
+
+                            //이미지를 image-show div에 추가
+                            var container = document.getElementById('image_preview');
+                            container.appendChild(newImage);
+
                             document.querySelector('#result_div').hidden = false;
-                            addSpinner($('body'), true);
-                            var input = document.querySelector('input[type="file"]')
+
+                            addSpinner($('#result_div'), true);
                             var formdata = new FormData();
                             formdata.append("file", input.files[0], input.files[0].name);
                             var requestOptions = {
@@ -126,8 +146,28 @@
                                 res = JSON.stringify(JSON.parse(res), null, 4);
                                 console.log(res);
                                 document.querySelector('#result').innerHTML = res;
-                                removeSpinner($('body'), true);
-                            }).catch(error => document.write(error));
+                                removeSpinner($('#result_div'), true);
+                                var table = document.getElementById("tbody_result");
+                                var row = table.insertRow(0);
+                                var shape = row.insertCell(0);
+                                var color = row.insertCell(1);
+                                var letter = row.insertCell(2);
+                                var info = row.insertCell(3);
+                                var info_array = JSON.parse(res).search_info;
+
+                                // Add some text to the new cells:
+                                shape.innerHTML = JSON.parse(res).shape;
+                                color.innerHTML = JSON.parse(res).color;
+                                letter.innerHTML = JSON.parse(res).letter;
+                                //info.innerHTML = JSON.parse(res).info;
+                                for(let i=0; i<info_array.length; i++){
+                                    info.innerHTML = info.innerHTML+"\n"+info_array[i];
+                                }
+                              
+                            }).catch(error => {
+                              document.querySelector('#result').innerHTML = error;
+                              removeSpinner($('#result_div'), true);
+                            });
                         }
         </script>
         <script>
@@ -145,10 +185,10 @@
                     complete: function(xhr, responseText, thrownError) {
                         if (xhr.status == "200") {
                             isAccessible = true;
-                            document.querySelector('#service_check_a').innerHTML = '<p class = "text-sm text-green-400 hover:text-black"style = "margin-left:0.5em" > Server Online </p>'
+                            document.querySelector('#service_check_a').innerHTML = '<div class="alert alert-success" role="alert"> <b>ML API</b> 서버와 연결되었습니다. </div>'
                         } else {
                             isAccessible = false;
-                            document.querySelector('#service_check_a').innerHTML = '<p class = "text-sm text-red-500 hover:text-black"style = "margin-left:0.5em" > Server Offline </p>' 
+                            document.querySelector('#service_check_a').innerHTML = '<div class="alert alert-danger" role="alert"> <b>ML API</b> 서버와 연결 할 수 없습니다. </div>' 
                         }
                     }
                 });
@@ -157,23 +197,45 @@
                 checkConnection(); // here I invoke the checking function
             });
         </script>
-        <p> Model Test Page <a target=_blank href="#" id="service_check_a" style="display: inline-table;">
-                <svg class="ml-1.5 text-sm text-gray-400 hover:text-black" xmlns=http://www.w3.org/2000/svg xmlns:xlink=http://www.w3.org/1999/xlink aria-hidden=true focusable=false role=img width=1em height=1em preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
-                    <path d="M17 22v-8h-4v2h2v6h-3v2h8v-2h-3z" fill=currentColor></path>
-                    <path d="M16 8a1.5 1.5 0 1 0 1.5 1.5A1.5 1.5 0 0 0 16 8z" fill=currentColor></path>
-                    <path d="M16 30a14 14 0 1 1 14-14a14 14 0 0 1-14 14zm0-26a12 12 0 1 0 12 12A12 12 0 0 0 16 4z" fill=currentColor></path>
-                </svg>
-            </a>
-        </p>
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-8">
+              <h4>Model Test Page</h4>
+          <a target=_blank href="#" id="service_check_a" style="text-align: left;text-decoration: none;"> </a>
         <hr>
-        <br>
-        <input type="file" name="file" />
-        <br>
-        <input type="button" onclick="fileUpload()" value="업로드" />
-        <hr>
-        <div id="result_div" hidden>
-            <p>결과</p>
-            <pre id="result"></pre>
+
+        <div class="input-group">
+          <input type="file" class="form-control" name="file" aria-describedby="inputGroupFileAddon04" aria-label="Upload">
+          <button class="btn btn-outline-secondary" type="button" onclick="fileUpload()" id="inputGroupFileAddon04">업로드</button>
         </div>
+
+        <div id="result_div" hidden>
+          <hr>
+          <span class="badge text-bg-success">업로드 된 이미지</span>
+          <div id="image_preview"></div>
+          <hr>
+          <span class="badge text-bg-success">결과</span>
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">모양</th>
+                <th scope="col">색깔</th>
+                <th scope="col">인식된 문자</th>
+                <th scope="col">검색된 의약품</th>
+              </tr>
+            </thead>
+            <tbody id="tbody_result">
+              <tr>
+              </tr>
+            </tbody>
+          </table>
+          <hr>
+          <span class="badge text-bg-success">결과 JSON</span>
+          <pre id="result"></pre>
+        </div>
+      </div>
+      </div>
+    </div>
+
     </body>
 </html>
