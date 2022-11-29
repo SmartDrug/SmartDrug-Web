@@ -2,6 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <title>파일 업로드 테스트</title>
     <style>
@@ -165,8 +166,9 @@
                                 letter.innerHTML = JSON.parse(res).letter;
                                 //info.innerHTML = JSON.parse(res).info;
                                 for(let i=0; i<info_array.length; i++){
-                                    info.innerHTML = info.innerHTML+"\n"+info_array[i];
+                                    info.innerHTML = info.innerHTML+info_array[i]+"<br>";
                                 }
+                                info.innerHTML = info.innerHTML.substring(0, info.innerHTML.length-4);
                               
                             }).catch(error => {
                               document.querySelector('#result').innerHTML = error;
@@ -224,7 +226,7 @@
               <tr>
                 <th scope="col">모양</th>
                 <th scope="col">색깔</th>
-                <th scope="col">인식된 문자</th>
+                <th scope="col">문자</th>
                 <th scope="col">검색된 의약품</th>
               </tr>
             </thead>
