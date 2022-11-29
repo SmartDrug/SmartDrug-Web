@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <title>파일 업로드 테스트</title>
+    <style>
+        @keyframes spinner {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .text-sm {
+            font-size: .875rem;
+            line-height: 1.25rem
+        }
+
+        .text-green-400 {
+            --tw-text-opacity: 1;
+            color: rgb(51 204 51/var(--tw-text-opacity))
+        }
+
+        .text-red-500 {
+            --tw-text-opacity: 1;
+            color: rgb(239 68 68/var(--tw-text-opacity))
+        }
+
+        .spinner,
+        .spinner:before {
+            width: 20px;
+            height: 20px;
+            box-sizing: border-box;
+        }
+
+        .spinner:before {
+            content: '';
+            display: block;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            border-top-color: #333;
+            animation: spinner .6s linear infinite;
+        }
+
+        .spinner-absolute {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-top: -10px;
+            margin-left: -10px;
+        }
+
+        /* Animations */
+        .spinner-add,
+        .spinner-remove {
+            animation-fill-mode: both;
+            animation-duration: .4s;
+        }
+
+        .spinner-add {
+            animation-name: spinner-add;
+        }
+
+        @keyframes spinner-add {
+            from {
+                transform: scale(0);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .spinner-remove {
+            animation-name: spinner-remove;
+        }
+
+        @keyframes spinner-remove {
+            to {
+                transform: scale(0);
+            }
+        }
+    </style>
+    <body>
+        <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
+        <script>
+            function addSpinner(el, static_pos) {
+                var spinner = el.children('.spinner');
+                if (spinner.length && !spinner.hasClass('spinner-remove')) return null;
+                !spinner.length && (spinner = $(' < div class = "spinner' + (static_pos ? '' : ' spinner-absolute') + '" / > ').appendTo(el));
+                            animateSpinner(spinner, 'add');
+                        }
+
+                        function removeSpinner(el, complete) {
+                            var spinner = el.children('.spinner');
+                            spinner.length && animateSpinner(spinner, 'remove', complete);
+                        }
+
+                        function animateSpinner(el, animation, complete) {
+                            if (el.data('animating')) {
+                                el.removeClass(el.data('animating')).data('animating', null);
+                                el.data('animationTimeout') && clearTimeout(el.data('animationTimeout'));
+                            }
+                            el.addClass('spinner-' + animation).data('animating', 'spinner-' + animation);
+                            el.data('animationTimeout', setTimeout(function() {
+                                animation == 'remove' && el.remove();
+                                complete && complete();
+                            }, parseFloat(el.css('animation-duration')) * 1000));
+                        }
+
+                        function fileUpload() {
+                            document.querySelector('#result_div').hidden = false;
+                            addSpinner($('body'), true);
+                            var input = document.querySelector('input[type="file"]')
+                            var formdata = new FormData();
+                            formdata.append("file", input.files[0], input.files[0].name);
+                            var requestOptions = {
+                                method: 'POST',
+                                body: formdata,
+                                redirect: 'follow'
+                            };
+                            fetch("https://krr.kr:5000/photo", requestOptions).then(response => response.arrayBuffer()).then(result => {
+                                const decoder = new TextDecoder('iso-8859-1');
+                                const text = decoder.decode(result);
+                                let res = decodeURIComponent(unescape(text));
+                                res = JSON.stringify(JSON.parse(res), null, 4);
+                                console.log(res);
+                                document.querySelector('#result').innerHTML = res;
+                                removeSpinner($('body'), true);
+                            }).catch(error => document.write(error));
+                        }
+        </script>
+        <script>
+            var isAccessible = null;
+
+            function checkConnection() {
+                var url = "https://krr.kr:5000/check";
+                $.ajax({
+                    url: url,
+                    type: "get",
+                    cache: false,
+                    crossDomain: true,
+                    asynchronous: false,
+                    timeout: 1000, // set a timeout in milliseconds
+                    complete: function(xhr, responseText, thrownError) {
+                        if (xhr.status == "200") {
+                            isAccessible = true;
+                            document.querySelector('#service_check_a').innerHTML = '<p class = "text-sm text-green-400 hover:text-black"style = "margin-left:0.5em" > Server Online </p>'
+                        } else {
+                            isAccessible = false;
+                            document.querySelector('#service_check_a').innerHTML = '<p class = "text-sm text-red-500 hover:text-black"style = "margin-left:0.5em" > Server Offline </p>' 
+                        }
+                    }
+                });
+            }
+            $(document).ready(function() {
+                checkConnection(); // here I invoke the checking function
+            });
+        </script>
+        <p> Model Test Page <a target=_blank href="#" id="service_check_a" style="display: inline-table;">
+                <svg class="ml-1.5 text-sm text-gray-400 hover:text-black" xmlns=http://www.w3.org/2000/svg xmlns:xlink=http://www.w3.org/1999/xlink aria-hidden=true focusable=false role=img width=1em height=1em preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
+                    <path d="M17 22v-8h-4v2h2v6h-3v2h8v-2h-3z" fill=currentColor></path>
+                    <path d="M16 8a1.5 1.5 0 1 0 1.5 1.5A1.5 1.5 0 0 0 16 8z" fill=currentColor></path>
+                    <path d="M16 30a14 14 0 1 1 14-14a14 14 0 0 1-14 14zm0-26a12 12 0 1 0 12 12A12 12 0 0 0 16 4z" fill=currentColor></path>
+                </svg>
+            </a>
+        </p>
+        <hr>
+        <br>
+        <input type="file" name="file" />
+        <br>
+        <input type="button" onclick="fileUpload()" value="업로드" />
+        <hr>
+        <div id="result_div" hidden>
+            <p>결과</p>
+            <pre id="result"></pre>
+        </div>
+    </body>
+</html>
